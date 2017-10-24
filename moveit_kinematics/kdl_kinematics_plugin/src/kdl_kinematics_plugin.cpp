@@ -459,7 +459,7 @@ bool KDLKinematicsPlugin::searchPositionIK(const geometry_msgs::Pose& ik_pose, c
 
   KDL::ChainFkSolverPos_recursive fk_solver(kdl_chain_);
   KDL::ChainIkSolverVel_pinv_mimic ik_solver_vel(kdl_chain_, joint_model_group_->getMimicJointModels().size(),
-                                                 redundant_joint_indices_.size(), position_ik_);
+                                                 redundant_joint_indices_.size(), position_weight_, orientation_weight_, position_ik_, epsilon_);
   KDL::ChainIkSolverPos_NR_JL_Mimic ik_solver_pos(kdl_chain_, joint_min_, joint_max_, fk_solver, ik_solver_vel,
                                                   max_solver_iterations_, position_tolerance_, orientation_tolerance_ , position_ik_);
   ik_solver_vel.setMimicJoints(mimic_joints_);

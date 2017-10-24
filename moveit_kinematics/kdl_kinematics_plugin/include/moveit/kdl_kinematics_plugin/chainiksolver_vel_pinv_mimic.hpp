@@ -29,10 +29,8 @@
 #include "kdl/config.h"
 #include "kdl/chainiksolver.hpp"
 #include "kdl/chainjnttojacsolver.hpp"
-#include "kdl/utilities/svd_HH.hpp"
-#include "kdl/utilities/svd_eigen_HH.hpp"
-
 #include <moveit/kdl_kinematics_plugin/joint_mimic.hpp>
+#include <Eigen/SVD>
 
 namespace KDL
 {
@@ -64,8 +62,8 @@ public:
    * @param maxiter maximum iterations for the svd calculation,
    * default: 150
    */
-  explicit ChainIkSolverVel_pinv_mimic(const Chain& chain, int num_mimic_joints = 0, int num_redundant_joints = 0,
-                                       bool position_ik = false, double eps = 0.00001, int maxiter = 150);
+  explicit ChainIkSolverVel_pinv_mimic(const Chain& _chain, int _num_mimic_joints, int _num_redundant_joints,
+                                       double _position_weight, double _orientation_weight, bool _position_ik, double _eps);
 
 // TODO: simplify after kinetic support is dropped
 #define KDL_VERSION_LESS(a, b, c) (KDL_VERSION < ((a << 16) | (b << 8) | c))
@@ -127,36 +125,17 @@ private:
   const Chain chain;
   ChainJntToJacSolver jnt2jac;
 
-  // This set of variables are all used in the default case, i.e. where we are solving for the
-  // full end-effector pose
   Jacobian jac;
-  Eigen::MatrixXd U;
-  Eigen::VectorXd S;
-  Eigen::MatrixXd V;
-  Eigen::VectorXd tmp;
-
-  // This is the "reduced" jacobian, i.e. the contributions of the mimic joints have been mapped onto
-  // the active DOFs here
   Jacobian jac_reduced;
-
-  // This is the jacobian when the redundant joints are "locked" and play no part
   Jacobian jac_locked;
-
+  Eigen::JacobiSVD<Eigen::MatrixXd> svd;
   double eps;
-  int maxiter;
 
   // Mimic joint specific
   std::vector<kdl_kinematics_plugin::JointMimic> mimic_joints_;
   int num_mimic_joints;
 
   bool position_ik;
-
-  // This is the set of variable used when solving for inverse kinematics
-  // for the case where the redundant joint is "locked" and plays no part
-  Eigen::MatrixXd U_locked;
-  Eigen::VectorXd S_locked;
-  Eigen::MatrixXd V_locked;
-  Eigen::VectorXd tmp_locked;
 
   // Internal storage for a map from the "locked" state to the full active state
   std::vector<unsigned int> locked_joints_map_index;

@@ -28,20 +28,15 @@
 
 namespace KDL
 {
-ChainIkSolverVel_pinv_mimic::ChainIkSolverVel_pinv_mimic(const Chain& _chain, int _num_mimic_joints,
-                                                         int _num_redundant_joints, bool _position_ik, double _eps,
-                                                         int _maxiter)
+ChainIkSolverVel_pinv_mimic::ChainIkSolverVel_pinv_mimic(const Chain& _chain, int _num_mimic_joints, int _num_redundant_joints,
+                                                         double _position_weight, double _orientation_weight, bool _position_ik, double _eps)
   : chain(_chain)
   , jnt2jac(chain)
   , jac(chain.getNrOfJoints())
-  , U(MatrixXd::Zero(6, chain.getNrOfJoints() - _num_mimic_joints))
-  , S(VectorXd::Zero(chain.getNrOfJoints() - _num_mimic_joints))
-  , V(MatrixXd::Zero(chain.getNrOfJoints() - _num_mimic_joints, chain.getNrOfJoints() - _num_mimic_joints))
-  , tmp(chain.getNrOfJoints() - _num_mimic_joints)
   , jac_reduced(chain.getNrOfJoints() - _num_mimic_joints)
   , jac_locked(chain.getNrOfJoints() - _num_redundant_joints - _num_mimic_joints)
+  , svd(_position_ik ? 3 : 6, chain.getNrOfJoints() - _num_mimic_joints, Eigen::ComputeThinU | Eigen::ComputeThinV)
   , eps(_eps)
-  , maxiter(_maxiter)
   , num_mimic_joints(_num_mimic_joints)
   , position_ik(_position_ik)
   , num_redundant_joints(_num_redundant_joints)
@@ -156,7 +151,7 @@ int ChainIkSolverVel_pinv_mimic::CartToJnt(const JntArray& q_in, const Twist& v_
   weightJac(jac_reduced);
 
   // transform v_in to 6D Eigen::Vector and apply weigthing
-  Matrix<double, 6, 1> vin;
+  Eigen::Matrix<double, 6, 1> vin;
   vin.topRows<3>() = position_weight_ * Eigen::Map<const Eigen::Vector3d>(v_in.vel.data, 3);
   vin.topRows<3>() = orientation_weight_ * Eigen::Map<const Eigen::Vector3d>(v_in.rot.data, 3);
 
@@ -175,22 +170,14 @@ int ChainIkSolverVel_pinv_mimic::CartToJnt(const JntArray& q_in, const Twist& v_
   // iterations "maxiter", put the results in "U", "S" and "V"
   // jac = U*S*Vt
 
-  int ret;
-  ret = svd_eigen_HH(J.topRows(rows), U.topRows(rows), S, V, tmp.topRows(rows), maxiter);
+  svd.compute(J.topRows(rows));
+  qdot_out.data.block(0,0, columns,1) = svd.solve(vin.topRows(rows));
 
-  // We have to calculate qdot_out = jac_pinv*v_in
-  // Using the svd decomposition this becomes(jac_pinv = V * S^-1 * U^t):
-  // qdot_out = V * S^-1 * U^t * v_in
-
-  // invert singular values
-  for (int i = 0; i < columns; i++)
+  // apply joint-weighting
+  for (int i = 0; i < columns; ++i)
   {
-    S(i) = fabs(S(i)) < eps ? 0.0 : 1.0 / S(i);
+      qdot_out(i) *= mimic_joints_[i].weight;
   }
-  // first we calculate S^-1 * U^t * v_in
-  tmp = S.array() * (U.topRows(rows).transpose() * vin.topRows(3)).array();
-  // pre-multiply tmp with V
-  qdot_out.data.block(0,0, V.rows(),1) = V * tmp;
 
   ROS_DEBUG_STREAM_NAMED("kdl", "Solution:");
   if (num_mimic_joints > 0)
@@ -200,7 +187,6 @@ int ChainIkSolverVel_pinv_mimic::CartToJnt(const JntArray& q_in, const Twist& v_
       qdot_out(i) = qdot_out(mimic_joints_[i].map_index) * mimic_joints_[i].multiplier;
     }
   }
-  // return the return value of the svd decomposition
-  return ret;
+  return 0;
 }
 }
