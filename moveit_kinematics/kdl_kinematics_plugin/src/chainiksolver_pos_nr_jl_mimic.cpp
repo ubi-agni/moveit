@@ -33,7 +33,8 @@ namespace KDL
 ChainIkSolverPos_NR_JL_Mimic::ChainIkSolverPos_NR_JL_Mimic(const Chain& _chain, const JntArray& _q_min,
                                                            const JntArray& _q_max, ChainFkSolverPos& _fksolver,
                                                            ChainIkSolverVel& _iksolver, unsigned int _maxiter,
-                                                           double _eps, bool _position_ik)
+                                                           double _position_tolerance, double _orientation_tolerance,
+                                                           bool _position_ik)
   : chain(_chain)
   , q_min(_q_min)
   , q_min_mimic(chain.getNrOfJoints())
@@ -44,7 +45,9 @@ ChainIkSolverPos_NR_JL_Mimic::ChainIkSolverPos_NR_JL_Mimic(const Chain& _chain, 
   , iksolver(_iksolver)
   , delta_q(_chain.getNrOfJoints())
   , maxiter(_maxiter)
-  , eps(_eps)
+  , position_tolerance(_position_tolerance)
+  , orientation_tolerance(_orientation_tolerance)
+  , eps(std::min(position_tolerance, orientation_tolerance))
   , position_ik(_position_ik)
 {
   mimic_joints.resize(chain.getNrOfJoints());
@@ -134,7 +137,7 @@ int ChainIkSolverPos_NR_JL_Mimic::CartToJnt(const JntArray& q_init, const Frame&
     double position_error = delta_twist.vel.Norm();
     double orientation_error = position_ik ? 0 : delta_twist.rot.Norm();
     double delta_twist_err = std::max(position_error, orientation_error);
-    if (delta_twist_err <= eps)
+    if (position_error <= position_tolerance && orientation_error <= orientation_tolerance)
     {
       success = true;
       break;

@@ -67,7 +67,8 @@ public:
    */
   ChainIkSolverPos_NR_JL_Mimic(const Chain& chain, const JntArray& q_min, const JntArray& q_max,
                                ChainFkSolverPos& fksolver, ChainIkSolverVel& iksolver, unsigned int maxiter = 100,
-                               double eps = 1e-6, bool position_ik = false);
+                               double position_tolerance = 1e-6, double orientation_tolerance = 1e-6,
+                               bool position_ik = false);
 
 // TODO: simplify after kinetic support is dropped
 #define KDL_VERSION_LESS(a, b, c) (KDL_VERSION < ((a << 16) | (b << 8) | c))
@@ -100,6 +101,8 @@ private:
   Frame f;
   Twist delta_twist;
   unsigned int maxiter;
+  double position_tolerance;
+  double orientation_tolerance;
   double eps;
   std::vector<kdl_kinematics_plugin::JointMimic> mimic_joints;
   void qToqMimic(const JntArray& q,

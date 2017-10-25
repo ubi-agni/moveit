@@ -199,6 +199,8 @@ private:
   const robot_model::JointModelGroup* joint_model_group_;
   int max_solver_iterations_;
   double epsilon_;
+  double position_tolerance_;
+  double orientation_tolerance_;
   std::vector<JointMimic> mimic_joints_;
 };
 }
