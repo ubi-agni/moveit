@@ -49,7 +49,7 @@ public:
   JointMimic()
   {
     this->reset(0);
-  };
+  }
 
   /** \brief Offset for this joint value from the joint that it mimics */
   double offset;
@@ -61,6 +61,8 @@ public:
   std::string joint_name;
   /** \brief If true, this joint is an active DOF and not a mimic joint*/
   bool active;
+  /** \brief If active, the weight determines the contribution of this joint to the overall motion */
+  double weight;
 
   void reset(unsigned int index)
   {
@@ -68,7 +70,8 @@ public:
     multiplier = 1.0;
     map_index = index;
     active = false;
-  };
+    weight = 1.0;
+  }
 };
 }
 

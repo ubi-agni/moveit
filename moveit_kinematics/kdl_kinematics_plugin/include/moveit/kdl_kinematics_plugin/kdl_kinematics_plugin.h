@@ -201,6 +201,8 @@ private:
   double epsilon_;
   double position_tolerance_;
   double orientation_tolerance_;
+  double position_weight_;
+  double orientation_weight_;
   std::vector<JointMimic> mimic_joints_;
 };
 }

@@ -239,13 +239,24 @@ bool KDLKinematicsPlugin::initialize(const moveit::core::RobotModel& robot_model
   }
   for (std::size_t i = 0; i < mimic_joints.size(); ++i)
   {
-    if (!mimic_joints[i].active)
+    if (mimic_joints[i].active)
     {
-      const robot_model::JointModel* joint_model =
-          joint_model_group->getJointModel(mimic_joints[i].joint_name)->getMimic();
+      // read weight of active joint from parameter server
+      double weight;
+      const std::string param_name = group_name + "/weighting/joints/" + mimic_joints[i].joint_name;
+      private_handle.param(param_name, weight, 1.0);
+      mimic_joints[i].weight = std::max(0.0, weight);
+      if (mimic_joints[i].weight != weight)
+        ROS_WARN_NAMED("kdl", "invalid joint weight parameter %s: %f", param_name.c_str(), weight);
+    }
+    else
+    {
+      // assign map_index of master joint
+      const std::string &master_name =
+          joint_model_group->getJointModel(mimic_joints[i].joint_name)->getMimic()->getName();
       for (std::size_t j = 0; j < mimic_joints.size(); ++j)
       {
-        if (mimic_joints[j].joint_name == joint_model->getName())
+        if (mimic_joints[j].joint_name == master_name)
         {
           mimic_joints[i].map_index = mimic_joints[j].map_index;
         }
@@ -253,6 +264,10 @@ bool KDLKinematicsPlugin::initialize(const moveit::core::RobotModel& robot_model
     }
   }
   mimic_joints_ = mimic_joints;
+
+  // load weighting
+  private_handle.param(group_name + "/weighting/position", position_weight_, 1.0);
+  private_handle.param(group_name + "/weighting/orientation", orientation_weight_, 1.0);
 
   // Setup the joint state groups that we need
   state_.reset(new robot_state::RobotState(robot_model_));
