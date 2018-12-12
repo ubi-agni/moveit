@@ -243,8 +243,8 @@ bool KDLKinematicsPlugin::initialize(const moveit::core::RobotModel& robot_model
     {
       // read weight of active joint from parameter server
       double weight;
-      const std::string param_name = group_name + "/weighting/joints/" + mimic_joints[i].joint_name;
-      private_handle.param(param_name, weight, 1.0);
+      const std::string param_name = "weighting/joints/" + mimic_joints[i].joint_name;
+      lookupParam(param_name, weight, 1.0);
       mimic_joints[i].weight = std::max(0.0, weight);
       if (mimic_joints[i].weight != weight)
         ROS_WARN_NAMED("kdl", "invalid joint weight parameter %s: %f", param_name.c_str(), weight);
@@ -266,8 +266,8 @@ bool KDLKinematicsPlugin::initialize(const moveit::core::RobotModel& robot_model
   mimic_joints_ = mimic_joints;
 
   // load weighting
-  private_handle.param(group_name + "/weighting/position", position_weight_, 1.0);
-  private_handle.param(group_name + "/weighting/orientation", orientation_weight_, 1.0);
+  lookupParam("weighting/position", position_weight_, 1.0);
+  lookupParam("weighting/orientation", orientation_weight_, 1.0);
 
   // Setup the joint state groups that we need
   state_.reset(new robot_state::RobotState(robot_model_));
