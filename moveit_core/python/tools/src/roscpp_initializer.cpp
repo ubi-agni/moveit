@@ -60,7 +60,7 @@ struct InitProxy
     usage = 0;
     if (!ros::isInitialized())
       ros::init(remappings, node_name, options | ros::init_options::NoSigintHandler);
-    spinner.reset(new ros::AsyncSpinner(1));
+    spinner = std::make_unique<ros::AsyncSpinner>(1);
     spinner->start();
   }
   ~InitProxy()
@@ -71,33 +71,33 @@ struct InitProxy
       ros::shutdown();
   }
 
-  static std::mutex mutex;
-  static std::unique_ptr<InitProxy> singleton_instance;
+  static std::mutex mutex_;
+  static std::unique_ptr<InitProxy> singleton_instance_;
   unsigned int usage;
   std::unique_ptr<ros::AsyncSpinner> spinner;
 };
-std::mutex InitProxy::mutex;
-std::unique_ptr<InitProxy> InitProxy::singleton_instance;
+std::mutex InitProxy::mutex_;
+std::unique_ptr<InitProxy> InitProxy::singleton_instance_;
 }  // namespace
 
 void InitProxy::init(const std::string& node_name, const std::map<std::string, std::string>& remappings,
                      uint32_t options)
 {
-  std::unique_lock<std::mutex> lock(mutex);
-  if (!singleton_instance)
-    singleton_instance.reset(new InitProxy(node_name, remappings, options));
-  ++singleton_instance->usage;
+  std::unique_lock<std::mutex> lock(mutex_);
+  if (!singleton_instance_)
+    singleton_instance_ = std::make_unique<InitProxy>(node_name, remappings, options);
+  ++singleton_instance_->usage;
 }
 
 void InitProxy::reset(bool shutdown)
 {
-  std::unique_lock<std::mutex> lock(mutex);
-  if (!singleton_instance || singleton_instance->usage == 0)
+  std::unique_lock<std::mutex> lock(mutex_);
+  if (!singleton_instance_ || singleton_instance_->usage == 0)
     ROS_ERROR_NAMED(LOGNAME, "Calling roscpp_shutdown() without a matching call to roscpp_init()!");
-  else if (--singleton_instance->usage == 0 && shutdown)
+  else if (--singleton_instance_->usage == 0 && shutdown)
   {
     ROS_WARN_NAMED(LOGNAME, "It's not recommended to call roscpp_shutdown().");
-    singleton_instance.reset();
+    singleton_instance_.reset();
   }
 }
 
