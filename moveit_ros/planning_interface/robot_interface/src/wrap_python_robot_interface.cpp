@@ -48,7 +48,6 @@
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
-#include <Python.h>
 
 /** @cond IGNORE */
 
@@ -74,7 +73,7 @@ public:
     return robot_model_->getName().c_str();
   }
 
-  std::vector<std::string> getActiveJointNames() const
+  const std::vector<std::string>& getActiveJointNames() const
   {
     return robot_model_->getActiveJointModelNames();
   }
@@ -88,7 +87,7 @@ public:
       return {};
   }
 
-  std::vector<std::string> getJointNames() const
+  const std::vector<std::string>& getJointNames() const
   {
     return robot_model_->getJointModelNames();
   }
@@ -115,7 +114,7 @@ public:
       return {};
   }
 
-  std::vector<std::string> getLinkNames() const
+  const std::vector<std::string>& getLinkNames() const
   {
     return robot_model_->getLinkModelNames();
   }
@@ -129,7 +128,7 @@ public:
       return {};
   }
 
-  std::vector<std::string> getGroupNames() const
+  const std::vector<std::string>& getGroupNames() const
   {
     return robot_model_->getJointModelGroupNames();
   }

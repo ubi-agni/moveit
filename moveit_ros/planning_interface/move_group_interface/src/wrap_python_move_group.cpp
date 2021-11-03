@@ -55,7 +55,6 @@
 #include <pybind11/stl.h>
 #include <pybind11/eigen.h>
 #include <memory>
-#include <Python.h>
 
 /** @cond IGNORE */
 

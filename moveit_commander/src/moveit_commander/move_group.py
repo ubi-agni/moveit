@@ -197,8 +197,7 @@ class MoveGroupCommander(object):
         Instead, one IK solution will be computed first, and that will be sent to the planner.
         """
         if isinstance(arg1, RobotState):
-            raise NotImplementedError("set_state_value_target is not implemented")
-            if not self._g.set_state_value_target(arg1):
+            if not self._g.set_joint_value_target(arg1.joint_state):
                 raise MoveItCommanderException(
                     "Error setting state target. Is the target state within bounds?"
                 )
