@@ -66,7 +66,7 @@ public:
 }  // namespace planning_interface
 }  // namespace moveit
 
-PYBIND11_MODULE(_moveit_planning_scene_interface, m)
+PYBIND11_MODULE(pymoveit_planning_scene_interface, m)
 {
   using moveit::planning_interface::PlanningSceneInterface;
   using moveit::planning_interface::PlanningSceneInterfaceWrapper;
