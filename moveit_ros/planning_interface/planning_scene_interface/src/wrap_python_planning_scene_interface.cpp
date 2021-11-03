@@ -71,17 +71,22 @@ PYBIND11_MODULE(pymoveit_planning_scene_interface, m)
   using moveit::planning_interface::PlanningSceneInterfaceWrapper;
 
   py::class_<PlanningSceneInterfaceWrapper> planning_scene_class(m, "PlanningSceneInterface");
-  planning_scene_class.def(py::init<>());
-  planning_scene_class.def(py::init<std::string>());
+  planning_scene_class.def(py::init<std::string>(), py::arg("namespace") = std::string(""));
 
-  planning_scene_class.def("get_known_object_names", &PlanningSceneInterface::getKnownObjectNames);
+  planning_scene_class.def("get_known_object_names", &PlanningSceneInterface::getKnownObjectNames,
+                           py::arg("with_type") = false);
   planning_scene_class.def("get_known_object_names_in_roi",
                            py::overload_cast<double, double, double, double, double, double, bool>(
-                               &PlanningSceneInterface::getKnownObjectNamesInROI));
-  planning_scene_class.def("get_object_poses", &PlanningSceneInterface::getObjectPoses);
-  planning_scene_class.def("get_objects", &PlanningSceneInterface::getObjects);
-  planning_scene_class.def("get_attached_objects", &PlanningSceneInterface::getAttachedObjects);
-  planning_scene_class.def("apply_planning_scene", &PlanningSceneInterface::applyPlanningScene);
+                               &PlanningSceneInterface::getKnownObjectNamesInROI),
+                           py::arg("minx"), py::arg("miny"), py::arg("minz"), py::arg("maxx"), py::arg("maxy"),
+                           py::arg("maxz"), py::arg("with_type") = false);
+  planning_scene_class.def("get_object_poses", &PlanningSceneInterface::getObjectPoses, py::arg("object_ids"));
+  planning_scene_class.def("get_objects", &PlanningSceneInterface::getObjects,
+                           py::arg("object_ids") = std::vector<std::string>{});
+  planning_scene_class.def("get_attached_objects", &PlanningSceneInterface::getAttachedObjects,
+                           py::arg("object_ids") = std::vector<std::string>{});
+  planning_scene_class.def("apply_planning_scene", &PlanningSceneInterface::applyPlanningScene,
+                           py::arg("planning_scene"));
 }
 
 /** @endcond */

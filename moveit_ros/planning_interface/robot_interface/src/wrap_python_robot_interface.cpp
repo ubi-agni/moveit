@@ -378,36 +378,38 @@ private:
 PYBIND11_MODULE(pymoveit_robot_interface, m)
 {
   py::class_<RobotInterfacePython> robot_class(m, "RobotInterface");
-  robot_class.def(py::init<std::string>());
-  robot_class.def(py::init<std::string, std::string>());
+  robot_class.def(py::init<std::string, std::string>(), py::arg("robot_description"),
+                  py::arg("namespace") = std::string{});
 
   robot_class.def("get_joint_names", &RobotInterfacePython::getJointNames);
-  robot_class.def("get_group_joint_names", &RobotInterfacePython::getGroupJointNames);
+  robot_class.def("get_group_joint_names", &RobotInterfacePython::getGroupJointNames, py::arg("group"));
   robot_class.def("get_active_joint_names", &RobotInterfacePython::getActiveJointNames);
-  robot_class.def("get_group_active_joint_names", &RobotInterfacePython::getGroupActiveJointNames);
-  robot_class.def("get_group_default_states", &RobotInterfacePython::getDefaultStateNames);
-  robot_class.def("get_group_joint_tips", &RobotInterfacePython::getGroupJointTips);
+  robot_class.def("get_group_active_joint_names", &RobotInterfacePython::getGroupActiveJointNames, py::arg("group"));
+  robot_class.def("get_group_default_states", &RobotInterfacePython::getDefaultStateNames, py::arg("group"));
+  robot_class.def("get_group_joint_tips", &RobotInterfacePython::getGroupJointTips, py::arg("group"));
   robot_class.def("get_group_names", &RobotInterfacePython::getGroupNames);
   robot_class.def("get_link_names", &RobotInterfacePython::getLinkNames);
-  robot_class.def("get_group_link_names", &RobotInterfacePython::getGroupLinkNames);
-  robot_class.def("get_joint_limits", &RobotInterfacePython::getJointLimits);
-  robot_class.def("get_link_pose", &RobotInterfacePython::getLinkPose);
+  robot_class.def("get_group_link_names", &RobotInterfacePython::getGroupLinkNames, py::arg("group"));
+  robot_class.def("get_joint_limits", &RobotInterfacePython::getJointLimits, py::arg("name"));
+  robot_class.def("get_link_pose", &RobotInterfacePython::getLinkPose, py::arg("name"));
   robot_class.def("get_planning_frame", &RobotInterfacePython::getPlanningFrame);
   robot_class.def("get_current_state", &RobotInterfacePython::getCurrentState);
   robot_class.def("get_current_variable_values", &RobotInterfacePython::getCurrentVariableValues);
-  robot_class.def("get_current_joint_values", &RobotInterfacePython::getCurrentJointValues);
-  robot_class.def("get_joint_values", &RobotInterfacePython::getJointValues);
+  robot_class.def("get_current_joint_values", &RobotInterfacePython::getCurrentJointValues, py::arg("name"));
+  robot_class.def("get_joint_values", &RobotInterfacePython::getJointValues, py::arg("group"), py::arg("named_state"));
   robot_class.def("get_robot_root_link", &RobotInterfacePython::getRobotRootLink);
-  robot_class.def("has_group", &RobotInterfacePython::hasGroup);
+  robot_class.def("has_group", &RobotInterfacePython::hasGroup, py::arg("group"));
   robot_class.def("get_robot_name", &RobotInterfacePython::getRobotName);
   robot_class.def("get_robot_markers", &RobotInterfacePython::getRobotMarkers);
-  robot_class.def("get_robot_markers", &RobotInterfacePython::getRobotMarkersPythonList);
-  robot_class.def("get_robot_markers", &RobotInterfacePython::getRobotMarkersFromMsg);
-  robot_class.def("get_robot_markers", &RobotInterfacePython::getRobotMarkersPythonDictList);
-  robot_class.def("get_robot_markers", &RobotInterfacePython::getRobotMarkersPythonDict);
-  robot_class.def("get_group_markers", &RobotInterfacePython::getRobotMarkersGroup);
-  robot_class.def("get_group_markers", &RobotInterfacePython::getRobotMarkersGroupPythonDict);
-  robot_class.def("get_parent_group", &RobotInterfacePython::getEndEffectorParentGroup);
+  robot_class.def("get_robot_markers", &RobotInterfacePython::getRobotMarkersPythonList, py::arg("links"));
+  robot_class.def("get_robot_markers", &RobotInterfacePython::getRobotMarkersFromMsg, py::arg("robot_state_msg"));
+  robot_class.def("get_robot_markers", &RobotInterfacePython::getRobotMarkersPythonDictList, py::arg("joint_values"),
+                  py::arg("links"));
+  robot_class.def("get_robot_markers", &RobotInterfacePython::getRobotMarkersPythonDict, py::arg("joint_values"));
+  robot_class.def("get_group_markers", &RobotInterfacePython::getRobotMarkersGroup, py::arg("group"));
+  robot_class.def("get_group_markers", &RobotInterfacePython::getRobotMarkersGroupPythonDict, py::arg("group"),
+                  py::arg("joint_values"));
+  robot_class.def("get_parent_group", &RobotInterfacePython::getEndEffectorParentGroup, py::arg("group"));
 }
 
 /** @endcond */

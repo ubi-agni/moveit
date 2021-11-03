@@ -326,21 +326,26 @@ PYBIND11_MODULE(pymoveit_move_group_interface, m)
 
   py::class_<MoveGroupInterfaceWrapper> move_group_interface_class(m, "MoveGroupInterface");
 
-  move_group_interface_class.def(py::init<std::string, std::string>());
-  move_group_interface_class.def(py::init<std::string, std::string, std::string>());
-  move_group_interface_class.def(py::init<std::string, std::string, std::string, double>());
+  move_group_interface_class.def(py::init<std::string, std::string, std::string, double>(), py::arg("group_name"),
+                                 py::arg("robot_description"), py::arg("namespace") = std::string{},
+                                 py::arg("wait_for_servers") = 5.0);
 
   move_group_interface_class.def("async_move", &MoveGroupInterfaceWrapper::asyncMovePython);
   move_group_interface_class.def("move", &MoveGroupInterfaceWrapper::movePython);
-  move_group_interface_class.def("execute", &MoveGroupInterfaceWrapper::executePython);
-  move_group_interface_class.def("async_execute", &MoveGroupInterfaceWrapper::asyncExecutePython);
+  move_group_interface_class.def("execute", &MoveGroupInterfaceWrapper::executePython, py::arg("plan"));
+  move_group_interface_class.def("async_execute", &MoveGroupInterfaceWrapper::asyncExecutePython, py::arg("plan"));
 
   move_group_interface_class.def(
-      "pick", py::overload_cast<const std::string&, std::vector<moveit_msgs::Grasp>, bool>(&MoveGroupInterface::pick));
-  move_group_interface_class.def("place", &MoveGroupInterfaceWrapper::placePose);
-  move_group_interface_class.def("place_poses_list", &MoveGroupInterfaceWrapper::placePoses);
-  move_group_interface_class.def("place_locations_list", &MoveGroupInterfaceWrapper::placeLocations);
-  move_group_interface_class.def("place", &MoveGroupInterfaceWrapper::placeAnywhere);
+      "pick", py::overload_cast<const std::string&, std::vector<moveit_msgs::Grasp>, bool>(&MoveGroupInterface::pick),
+      py::arg("object"), py::arg("grasps"), py::arg("plan_only") = false);
+  move_group_interface_class.def("place", &MoveGroupInterfaceWrapper::placePose, py::arg("object"), py::arg("pose"),
+                                 py::arg("plan_only") = false);
+  move_group_interface_class.def("place_poses_list", &MoveGroupInterfaceWrapper::placePoses, py::arg("object"),
+                                 py::arg("poses_list"), py::arg("plan_only") = false);
+  move_group_interface_class.def("place_locations_list", &MoveGroupInterfaceWrapper::placeLocations, py::arg("object"),
+                                 py::arg("locations_list"), py::arg("plan_only") = false);
+  move_group_interface_class.def("place", &MoveGroupInterfaceWrapper::placeAnywhere, py::arg("object"),
+                                 py::arg("plan_only") = false);
   move_group_interface_class.def("stop", &MoveGroupInterfaceWrapper::stop);
 
   move_group_interface_class.def("get_name", &MoveGroupInterfaceWrapper::getNameCStr);
@@ -350,132 +355,177 @@ PYBIND11_MODULE(pymoveit_move_group_interface, m)
   move_group_interface_class.def("get_active_joints", &MoveGroupInterface::getActiveJoints);
   move_group_interface_class.def("get_joints", &MoveGroupInterface::getJoints);
   move_group_interface_class.def("get_variable_count", &MoveGroupInterfaceWrapper::getVariableCount);
-  move_group_interface_class.def("allow_looking", &MoveGroupInterfaceWrapper::allowLooking);
-  move_group_interface_class.def("allow_replanning", &MoveGroupInterfaceWrapper::allowReplanning);
+  move_group_interface_class.def("allow_looking", &MoveGroupInterfaceWrapper::allowLooking, py::arg("flag"));
+  move_group_interface_class.def("allow_replanning", &MoveGroupInterfaceWrapper::allowReplanning, py::arg("flag"));
 
-  move_group_interface_class.def("set_pose_reference_frame", &MoveGroupInterfaceWrapper::setPoseReferenceFrame);
-
-  move_group_interface_class.def("set_pose_reference_frame", &MoveGroupInterfaceWrapper::setPoseReferenceFrame);
-  move_group_interface_class.def("set_end_effector_link", &MoveGroupInterfaceWrapper::setEndEffectorLink);
+  move_group_interface_class.def("set_pose_reference_frame", &MoveGroupInterfaceWrapper::setPoseReferenceFrame,
+                                 py::arg("reference_frame"));
+  move_group_interface_class.def("set_end_effector_link", &MoveGroupInterfaceWrapper::setEndEffectorLink,
+                                 py::arg("end_effector_link"));
   move_group_interface_class.def("get_end_effector_link", &MoveGroupInterfaceWrapper::getEndEffectorLinkCStr);
   move_group_interface_class.def("get_pose_reference_frame", &MoveGroupInterfaceWrapper::getPoseReferenceFrameCStr);
 
   // move_group_interface_class.def("set_pose_target", py::overload_cast<const geometry_msgs::PoseStamped&, const
   // std::string&>(&MoveGroupInterface::setPoseTarget));
-  move_group_interface_class.def("set_pose_target", py::overload_cast<const geometry_msgs::Pose&, const std::string&>(
-                                                        &MoveGroupInterface::setPoseTarget));
+  move_group_interface_class.def(
+      "set_pose_target",
+      py::overload_cast<const geometry_msgs::Pose&, const std::string&>(&MoveGroupInterface::setPoseTarget),
+      py::arg("target_pose"), py::arg("end_effector_link") = std::string{});
   move_group_interface_class.def("set_pose_targets",
                                  py::overload_cast<const std::vector<geometry_msgs::Pose>&, std::string const&>(
-                                     &MoveGroupInterface::setPoseTargets));
+                                     &MoveGroupInterface::setPoseTargets),
+                                 py::arg("target_poses"), py::arg("end_effector_link") = std::string{});
 
-  move_group_interface_class.def("set_position_target", &MoveGroupInterfaceWrapper::setPositionTarget);
-  move_group_interface_class.def("set_rpy_target", &MoveGroupInterfaceWrapper::setRPYTarget);
-  move_group_interface_class.def("set_orientation_target", &MoveGroupInterfaceWrapper::setOrientationTarget);
+  move_group_interface_class.def("set_position_target", &MoveGroupInterfaceWrapper::setPositionTarget, py::arg("x"),
+                                 py::arg("y"), py::arg("z"), py::arg("end_effector_link") = std::string{});
+  move_group_interface_class.def("set_rpy_target", &MoveGroupInterfaceWrapper::setRPYTarget, py::arg("roll"),
+                                 py::arg("pitch"), py::arg("yaw"), py::arg("end_effector_link") = std::string{});
+  move_group_interface_class.def("set_orientation_target", &MoveGroupInterfaceWrapper::setOrientationTarget,
+                                 py::arg("x"), py::arg("y"), py::arg("z"), py::arg("w"),
+                                 py::arg("end_effector_link") = std::string{});
 
-  move_group_interface_class.def("get_current_pose", &MoveGroupInterface::getCurrentPose);
-  move_group_interface_class.def("get_current_rpy", &MoveGroupInterface::getCurrentRPY);
+  move_group_interface_class.def("get_current_pose", &MoveGroupInterface::getCurrentPose,
+                                 py::arg("end_effector_link") = std::string{});
+  move_group_interface_class.def("get_current_rpy", &MoveGroupInterface::getCurrentRPY,
+                                 py::arg("end_effector_link") = std::string{});
 
-  move_group_interface_class.def("get_random_pose", &MoveGroupInterface::getRandomPose);
+  move_group_interface_class.def("get_random_pose", &MoveGroupInterface::getRandomPose,
+                                 py::arg("end_effector_link") = std::string{});
 
-  move_group_interface_class.def("clear_pose_target", &MoveGroupInterfaceWrapper::clearPoseTarget);
+  move_group_interface_class.def("clear_pose_target", &MoveGroupInterfaceWrapper::clearPoseTarget,
+                                 py::arg("end_effector_link") = std::string{});
   move_group_interface_class.def("clear_pose_targets", &MoveGroupInterfaceWrapper::clearPoseTargets);
 
-  move_group_interface_class.def("set_joint_value_target", py::overload_cast<const std::vector<double>&>(
-                                                               &MoveGroupInterface::setJointValueTarget));
-  move_group_interface_class.def("set_joint_value_target", py::overload_cast<std::map<std::string, double> const&>(
-                                                               &MoveGroupInterface::setJointValueTarget));
+  move_group_interface_class.def(
+      "set_joint_value_target", py::overload_cast<const std::vector<double>&>(&MoveGroupInterface::setJointValueTarget),
+      py::arg("group_variable_values"));
+  move_group_interface_class.def(
+      "set_joint_value_target",
+      py::overload_cast<std::map<std::string, double> const&>(&MoveGroupInterface::setJointValueTarget),
+      py::arg("group_variabe_names_and_values"));
 
   move_group_interface_class.def(
       "set_joint_value_target",
-      py::overload_cast<const std::string&, const std::vector<double>&>(&MoveGroupInterface::setJointValueTarget));
-  move_group_interface_class.def("set_joint_value_target", py::overload_cast<const std::string&, double>(
-                                                               &MoveGroupInterface::setJointValueTarget));
+      py::overload_cast<const std::string&, const std::vector<double>&>(&MoveGroupInterface::setJointValueTarget),
+      py::arg("joint_name"), py::arg("joint_values"));
+  move_group_interface_class.def(
+      "set_joint_value_target", py::overload_cast<const std::string&, double>(&MoveGroupInterface::setJointValueTarget),
+      py::arg("joint_name"), py::arg("joint_value"));
 
   move_group_interface_class.def("set_joint_value_target_from_pose",
-                                 &MoveGroupInterfaceWrapper::setJointValueTargetFromPosePython);
+                                 &MoveGroupInterfaceWrapper::setJointValueTargetFromPosePython, py::arg("pose_msg"),
+                                 py::arg("end_effector_link"), py::arg("approx"));
   move_group_interface_class.def("set_joint_value_target_from_pose_stamped",
                                  &MoveGroupInterfaceWrapper::setJointValueTargetFromPoseStampedPython);
-  move_group_interface_class.def("set_joint_value_target", py::overload_cast<sensor_msgs::JointState const&>(
-                                                               &MoveGroupInterface::setJointValueTarget));
+  move_group_interface_class.def(
+      "set_joint_value_target",
+      py::overload_cast<sensor_msgs::JointState const&>(&MoveGroupInterface::setJointValueTarget),
+      py::arg("joint_state"));
 
   move_group_interface_class.def("get_joint_value_target", &MoveGroupInterfaceWrapper::getJointValueTargetPythonList);
 
-  move_group_interface_class.def("set_named_target", &MoveGroupInterfaceWrapper::setNamedTarget);
+  move_group_interface_class.def("set_named_target", &MoveGroupInterfaceWrapper::setNamedTarget, py::arg("name"));
   move_group_interface_class.def("set_random_target", &MoveGroupInterfaceWrapper::setRandomTarget);
 
   move_group_interface_class.def("remember_joint_values",
-                                 py::overload_cast<const std::string&>(&MoveGroupInterface::rememberJointValues));
+                                 py::overload_cast<const std::string&>(&MoveGroupInterface::rememberJointValues),
+                                 py::arg("name"));
 
   move_group_interface_class.def(
       "remember_joint_values",
-      py::overload_cast<const std::string&, const std::vector<double>&>(&MoveGroupInterface::rememberJointValues));
+      py::overload_cast<const std::string&, const std::vector<double>&>(&MoveGroupInterface::rememberJointValues),
+      py::arg("name"), py::arg("values"));
 
-  move_group_interface_class.def("start_state_monitor", &MoveGroupInterfaceWrapper::startStateMonitor);
+  move_group_interface_class.def("start_state_monitor", &MoveGroupInterfaceWrapper::startStateMonitor,
+                                 py::arg("wait") = 1.0);
   move_group_interface_class.def("get_current_joint_values", &MoveGroupInterface::getCurrentJointValues);
   move_group_interface_class.def("get_random_joint_values", &MoveGroupInterface::getRandomJointValues);
   move_group_interface_class.def("get_remembered_joint_values", &MoveGroupInterface::getRememberedJointValues);
 
-  move_group_interface_class.def("forget_joint_values", &MoveGroupInterfaceWrapper::forgetJointValues);
+  move_group_interface_class.def("forget_joint_values", &MoveGroupInterfaceWrapper::forgetJointValues, py::arg("name"));
 
   move_group_interface_class.def("get_goal_joint_tolerance", &MoveGroupInterfaceWrapper::getGoalJointTolerance);
   move_group_interface_class.def("get_goal_position_tolerance", &MoveGroupInterfaceWrapper::getGoalPositionTolerance);
   move_group_interface_class.def("get_goal_orientation_tolerance",
                                  &MoveGroupInterfaceWrapper::getGoalOrientationTolerance);
 
-  move_group_interface_class.def("set_goal_joint_tolerance", &MoveGroupInterfaceWrapper::setGoalJointTolerance);
-  move_group_interface_class.def("set_goal_position_tolerance", &MoveGroupInterfaceWrapper::setGoalPositionTolerance);
+  move_group_interface_class.def("set_goal_joint_tolerance", &MoveGroupInterfaceWrapper::setGoalJointTolerance,
+                                 py::arg("tolerance"));
+  move_group_interface_class.def("set_goal_position_tolerance", &MoveGroupInterfaceWrapper::setGoalPositionTolerance,
+                                 py::arg("tolerance"));
   move_group_interface_class.def("set_goal_orientation_tolerance",
-                                 &MoveGroupInterfaceWrapper::setGoalOrientationTolerance);
-  move_group_interface_class.def("set_goal_tolerance", &MoveGroupInterfaceWrapper::setGoalTolerance);
+                                 &MoveGroupInterfaceWrapper::setGoalOrientationTolerance, py::arg("tolerance"));
+  move_group_interface_class.def("set_goal_tolerance", &MoveGroupInterfaceWrapper::setGoalTolerance,
+                                 py::arg("tolerance"));
 
   move_group_interface_class.def("set_start_state_to_current_state",
                                  &MoveGroupInterfaceWrapper::setStartStateToCurrentState);
   move_group_interface_class.def("set_start_state",
-                                 py::overload_cast<const moveit_msgs::RobotState&>(&MoveGroupInterface::setStartState));
+                                 py::overload_cast<const moveit_msgs::RobotState&>(&MoveGroupInterface::setStartState),
+                                 py::arg("start_state"));
 
   move_group_interface_class.def("set_path_constraints",
-                                 py::overload_cast<const std::string&>(&MoveGroupInterface::setPathConstraints));
-  move_group_interface_class.def("set_path_constraints", py::overload_cast<moveit_msgs::Constraints const&>(
-                                                             &MoveGroupInterface::setPathConstraints));
+                                 py::overload_cast<const std::string&>(&MoveGroupInterface::setPathConstraints),
+                                 py::arg("constraint_name"));
+  move_group_interface_class.def(
+      "set_path_constraints",
+      py::overload_cast<moveit_msgs::Constraints const&>(&MoveGroupInterface::setPathConstraints),
+      py::arg("constraints"));
   move_group_interface_class.def("get_path_constraints", &MoveGroupInterface::getPathConstraints);
   move_group_interface_class.def("clear_path_constraints", &MoveGroupInterfaceWrapper::clearPathConstraints);
 
-  move_group_interface_class.def("set_trajectory_constraints", &MoveGroupInterface::setTrajectoryConstraints);
+  move_group_interface_class.def("set_trajectory_constraints", &MoveGroupInterface::setTrajectoryConstraints,
+                                 py::arg("trajectory_constraints"));
   move_group_interface_class.def("get_trajectory_constraints", &MoveGroupInterface::getTrajectoryConstraints);
   move_group_interface_class.def("clear_trajectory_constraints", &MoveGroupInterfaceWrapper::clearTrajectoryConstraints);
   move_group_interface_class.def("get_known_constraints", &MoveGroupInterface::getKnownConstraints);
-  move_group_interface_class.def("set_constraints_database", &MoveGroupInterfaceWrapper::setConstraintsDatabase);
-  move_group_interface_class.def("set_workspace", &MoveGroupInterfaceWrapper::setWorkspace);
-  move_group_interface_class.def("set_planning_time", &MoveGroupInterfaceWrapper::setPlanningTime);
+  move_group_interface_class.def("set_constraints_database", &MoveGroupInterfaceWrapper::setConstraintsDatabase,
+                                 py::arg("host"), py::arg("port"));
+  move_group_interface_class.def("set_workspace", &MoveGroupInterfaceWrapper::setWorkspace, py::arg("minx"),
+                                 py::arg("miny"), py::arg("minz"), py::arg("maxx"), py::arg("maxy"), py::arg("maxz"));
+  move_group_interface_class.def("set_planning_time", &MoveGroupInterfaceWrapper::setPlanningTime, py::arg("seconds"));
   move_group_interface_class.def("get_planning_time", &MoveGroupInterfaceWrapper::getPlanningTime);
   move_group_interface_class.def("set_max_velocity_scaling_factor",
-                                 &MoveGroupInterfaceWrapper::setMaxVelocityScalingFactor);
+                                 &MoveGroupInterfaceWrapper::setMaxVelocityScalingFactor,
+                                 py::arg("max_velocity_scaling_factor"));
   move_group_interface_class.def("set_max_acceleration_scaling_factor",
-                                 &MoveGroupInterfaceWrapper::setMaxAccelerationScalingFactor);
-  move_group_interface_class.def("set_planner_id", &MoveGroupInterfaceWrapper::setPlannerId);
+                                 &MoveGroupInterfaceWrapper::setMaxAccelerationScalingFactor,
+                                 py::arg("max_acceleration_scaling_factor"));
+  move_group_interface_class.def("set_planner_id", &MoveGroupInterfaceWrapper::setPlannerId, py::arg("planner_id"));
   move_group_interface_class.def("get_planner_id", &MoveGroupInterfaceWrapper::getPlannerIdCStr);
-  move_group_interface_class.def("set_planning_pipeline_id", &MoveGroupInterfaceWrapper::setPlanningPipelineId);
+  move_group_interface_class.def("set_planning_pipeline_id", &MoveGroupInterfaceWrapper::setPlanningPipelineId,
+                                 py::arg("planning_pipeline_id"));
   move_group_interface_class.def("get_planning_pipeline_id", &MoveGroupInterfaceWrapper::getPlanningPipelineIdCStr);
-  move_group_interface_class.def("set_num_planning_attempts", &MoveGroupInterfaceWrapper::setNumPlanningAttempts);
+  move_group_interface_class.def("set_num_planning_attempts", &MoveGroupInterfaceWrapper::setNumPlanningAttempts,
+                                 py::arg("num_planning_attempts"));
   move_group_interface_class.def("plan", &MoveGroupInterfaceWrapper::planPython);
   move_group_interface_class.def("construct_motion_plan_request",
                                  &MoveGroupInterfaceWrapper::constructMotionPlanRequestPython);
   move_group_interface_class.def("compute_cartesian_path", &MoveGroupInterfaceWrapper::computeCartesianPathPython);
   move_group_interface_class.def("compute_cartesian_path",
-                                 &MoveGroupInterfaceWrapper::computeCartesianPathConstrainedPython);
-  move_group_interface_class.def("set_support_surface_name", &MoveGroupInterfaceWrapper::setSupportSurfaceName);
+                                 &MoveGroupInterfaceWrapper::computeCartesianPathConstrainedPython, py::arg("poses"),
+                                 py::arg("end_effector_step"), py::arg("jump_threshold"), py::arg("avoid_collisions"),
+                                 py::arg("path_constraints"));
+  move_group_interface_class.def("set_support_surface_name", &MoveGroupInterfaceWrapper::setSupportSurfaceName,
+                                 py::arg("name"));
   move_group_interface_class.def(
-      "attach_object", py::overload_cast<const std::string&, const std::string&, const std::vector<std::string>&>(
-                           &MoveGroupInterface::attachObject));
-  move_group_interface_class.def("detach_object", &MoveGroupInterfaceWrapper::detachObject);
-  move_group_interface_class.def("retime_trajectory", &MoveGroupInterfaceWrapper::retimeTrajectory);
+      "attach_object",
+      py::overload_cast<const std::string&, const std::string&, const std::vector<std::string>&>(
+          &MoveGroupInterface::attachObject),
+      py::arg("object"), py::arg("link"), py::arg("touch_links"));
+  move_group_interface_class.def("detach_object", &MoveGroupInterfaceWrapper::detachObject,
+                                 py::arg("name") = std::string{});
+  move_group_interface_class.def("retime_trajectory", &MoveGroupInterfaceWrapper::retimeTrajectory,
+                                 py::arg("ref_state_msg"), py::arg("traj_msg"), py::arg("velocity_scaling_factor"),
+                                 py::arg("acceleration_scaling_factor"), py::arg("algorithm"));
   move_group_interface_class.def("get_named_targets", &MoveGroupInterface::getNamedTargets);
-  move_group_interface_class.def("get_named_target_values", &MoveGroupInterface::getNamedTargetValues);
+  move_group_interface_class.def("get_named_target_values", &MoveGroupInterface::getNamedTargetValues, py::arg("name"));
   move_group_interface_class.def("get_current_state_bounded", &MoveGroupInterfaceWrapper::getCurrentStateBoundedPython);
   move_group_interface_class.def("get_current_state", &MoveGroupInterfaceWrapper::getCurrentStatePython);
   move_group_interface_class.def("get_jacobian_matrix", &MoveGroupInterfaceWrapper::getJacobianMatrixPython,
                                  py::arg("joint_values"), py::arg("reference_point") = std::array<double, 3>{});
-  move_group_interface_class.def("enforce_bounds", &MoveGroupInterfaceWrapper::enforceBoundsPython);
+  move_group_interface_class.def("enforce_bounds", &MoveGroupInterfaceWrapper::enforceBoundsPython,
+                                 py::arg("state_msg"));
 }
 
 /** @endcond */
