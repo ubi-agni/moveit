@@ -54,7 +54,7 @@ PYBIND11_EXPORT bool convertible(const pybind11::handle& h, const char* ros_msg_
  * This is a convenience method to support the old behaviour of returning
  * an empty ByteString.
  */
-PYBIND11_EXPORT [[noreturn]] void throwDeserializationError();
+PYBIND11_EXPORT void throwDeserializationError [[noreturn]] ();
 
 }  // namespace python
 }  // namespace moveit
