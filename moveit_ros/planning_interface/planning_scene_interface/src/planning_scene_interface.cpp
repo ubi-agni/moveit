@@ -209,6 +209,25 @@ public:
     return result;
   }
 
+  std::map<std::string, std_msgs::ColorRGBA> getObjectColors()
+  {
+    moveit_msgs::GetPlanningScene::Request request;
+    moveit_msgs::GetPlanningScene::Response response;
+    std::map<std::string, std_msgs::ColorRGBA> result;
+    request.components.components = request.components.OBJECT_COLORS;
+    if (!planning_scene_service_.call(request, response))
+    {
+      ROS_WARN_NAMED(LOGNAME, "Could not call planning scene service to get object colors");
+      return result;
+    }
+
+    for (const moveit_msgs::ObjectColor& object_color : response.scene.object_colors)
+    {
+      result[object_color.id] = object_color.color;
+    }
+    return result;
+  }
+
   bool applyPlanningScene(const moveit_msgs::PlanningScene& planning_scene)
   {
     moveit_msgs::ApplyPlanningScene::Request request;
@@ -313,6 +332,11 @@ std::map<std::string, moveit_msgs::AttachedCollisionObject>
 PlanningSceneInterface::getAttachedObjects(const std::vector<std::string>& object_ids)
 {
   return impl_->getAttachedObjects(object_ids);
+}
+
+std::map<std::string, std_msgs::ColorRGBA> PlanningSceneInterface::getObjectColors()
+{
+  return impl_->getObjectColors();
 }
 
 bool PlanningSceneInterface::applyCollisionObject(const moveit_msgs::CollisionObject& collision_object)

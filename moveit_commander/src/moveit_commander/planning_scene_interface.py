@@ -41,6 +41,7 @@ from geometry_msgs.msg import Point
 from shape_msgs.msg import SolidPrimitive, Plane, Mesh, MeshTriangle
 from .exception import MoveItCommanderException
 from moveit_msgs.srv import ApplyPlanningScene, ApplyPlanningSceneRequest
+from std_msgs.msg import ColorRGBA
 
 try:
     from pyassimp import pyassimp
@@ -224,6 +225,12 @@ class PlanningSceneInterface(object):
         Get the attached objects identified by the given object ids list. If no ids are provided, return all the attached objects.
         """
         return self._psi.get_attached_objects(object_ids)
+
+    def get_object_colors(self):
+        """
+        Get all available object color information. Result key corresponds to the object id.
+        """
+        return self._psi.get_object_colors()
 
     def apply_planning_scene(self, planning_scene_message):
         """
