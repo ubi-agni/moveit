@@ -176,7 +176,6 @@ PlanningSceneMonitor::~PlanningSceneMonitor()
   scene_.reset();
   parent_scene_.reset();
   robot_model_.reset();
-  std::cerr << "RM usage: " << rm_loader_->getModel().use_count() << std::endl;
   rm_loader_.reset();
 }
 
