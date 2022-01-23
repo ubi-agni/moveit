@@ -98,7 +98,7 @@ public:
   std::map<std::string, moveit_msgs::AttachedCollisionObject>
   getAttachedObjects(const std::vector<std::string>& object_ids = std::vector<std::string>());
 
-    /** \brief Get all available object colors. Result key corresponds to the object id. */
+  /** \brief Get all available object colors. Result key corresponds to the object id. */
   std::map<std::string, std_msgs::ColorRGBA> getObjectColors();
 
   /** \brief Apply collision object to the planning scene of the move_group node synchronously.
