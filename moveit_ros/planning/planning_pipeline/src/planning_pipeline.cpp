@@ -322,7 +322,7 @@ bool planning_pipeline::PlanningPipeline::generatePlan(const planning_scene::Pla
             {
               // check validity with verbose on
               const moveit::core::RobotState& robot_state = res.trajectory_->getWayPoint(it);
-              planning_scene->isStateValid(robot_state, req.path_constraints, req.group_name, true);
+              planning_scene->isStateValid(robot_state, path_constraints_resolved, req.group_name, true);
 
               // compute the contacts if any
               collision_detection::CollisionRequest c_req;
