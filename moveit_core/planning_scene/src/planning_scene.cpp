@@ -442,6 +442,11 @@ void PlanningScene::pushDiffs(const PlanningScenePtr& scene)
         scene->world_->removeObject(it.first);
         scene->removeObjectColor(it.first);
         scene->removeObjectType(it.first);
+        // if object is attached, it should not be removed from the ACM
+        if (!scene->getCurrentState().hasAttachedBody(it.first))
+        {
+          scene->getAllowedCollisionMatrixNonConst().removeEntry(it.first);
+        }
       }
       else
       {
@@ -1417,6 +1422,7 @@ void PlanningScene::removeAllCollisionObjects()
       world_->removeObject(object_id);
       removeObjectColor(object_id);
       removeObjectType(object_id);
+      getAllowedCollisionMatrixNonConst().removeEntry(object_id);
     }
 }
 
@@ -1875,6 +1881,7 @@ bool PlanningScene::processCollisionObjectRemove(const moveit_msgs::CollisionObj
 
     removeObjectColor(object.id);
     removeObjectType(object.id);
+    getAllowedCollisionMatrixNonConst().removeEntry(object.id);
   }
   return true;
 }
