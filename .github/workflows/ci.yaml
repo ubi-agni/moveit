@@ -31,7 +31,7 @@ jobs:
             CATKIN_LINT: true
             CLANG_TIDY: pedantic
           - IMAGE: jammy-ci
-          - IMAGE: noble-ci
+          - IMAGE: noble-ci-testing
             NAME: " Qt6"
             UPSTREAM_WORKSPACE: github:ros-visualization/rviz#noetic-devel
             UPSTREAM_CMAKE_ARGS: -DRVIZ_QT_VERSIONS=6
