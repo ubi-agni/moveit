@@ -16,7 +16,7 @@ jobs:
     name: pre-commit
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Install clang-format-12
         run: sudo apt-get install clang-format-12
       - uses: rhaschke/install-catkin_lint-action@main
