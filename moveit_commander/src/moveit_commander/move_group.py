@@ -368,7 +368,7 @@ class MoveGroupCommander(object):
             # by default we get orientation as a quaternion list
             # if we are updating a rotation axis however, we convert the orientation to RPY
             if axis > 2:
-                (r, p, y) = tf.transformations.euler_from_quaternion(pose[3:])
+                r, p, y = tf.transformations.euler_from_quaternion(pose[3:])
                 pose = [pose[0], pose[1], pose[2], r, p, y]
             if axis >= 0 and axis < 6:
                 pose[axis] = pose[axis] + value
@@ -564,7 +564,8 @@ class MoveGroupCommander(object):
 
     def set_max_velocity_scaling_factor(self, value):
         """Set a scaling factor to reduce the maximum joint velocities. Allowed values are in (0,1].
-        The default value is set in the joint_limits.yaml of the moveit_config package."""
+        The default value is set in the joint_limits.yaml of the moveit_config package.
+        """
         if value > 0 and value <= 1:
             self._g.set_max_velocity_scaling_factor(value)
         else:
@@ -574,7 +575,8 @@ class MoveGroupCommander(object):
 
     def set_max_acceleration_scaling_factor(self, value):
         """Set a scaling factor to reduce the maximum joint accelerations. Allowed values are in (0,1].
-        The default value is set in the joint_limits.yaml of the moveit_config package."""
+        The default value is set in the joint_limits.yaml of the moveit_config package.
+        """
         if value > 0 and value <= 1:
             self._g.set_max_acceleration_scaling_factor(value)
         else:
@@ -627,7 +629,7 @@ class MoveGroupCommander(object):
         elif joints is not None:
             self.set_joint_value_target(joints)
 
-        (error_code_msg, trajectory_msg, planning_time) = self._g.plan()
+        error_code_msg, trajectory_msg, planning_time = self._g.plan()
 
         error_code = MoveItErrorCodes()
         error_code.deserialize(error_code_msg)
@@ -665,14 +667,14 @@ class MoveGroupCommander(object):
                     "Unable to set path constraints, unknown constraint type "
                     + str(type(path_constraints))
                 )
-            (ser_path, fraction) = self._g.compute_cartesian_path(
+            ser_path, fraction = self._g.compute_cartesian_path(
                 [conversions.pose_to_list(p) for p in waypoints],
                 eef_step,
                 avoid_collisions,
                 constraints_str,
             )
         else:
-            (ser_path, fraction) = self._g.compute_cartesian_path(
+            ser_path, fraction = self._g.compute_cartesian_path(
                 [conversions.pose_to_list(p) for p in waypoints],
                 eef_step,
                 avoid_collisions,
